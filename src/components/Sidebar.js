@@ -35,7 +35,7 @@ const Sidebar = () => {
       <Toolbar /> {/* This creates top spacing if AppBar is present */}
       <Box sx={{ overflow: 'auto' }}>
         <List>
-          <ListItem button onClick={() => navigate('/home')}>
+          <ListItem button onClick={() => navigate('/dashboard')}>
             <ListItemIcon><DashboardIcon /></ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItem>

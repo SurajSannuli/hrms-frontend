@@ -19,6 +19,7 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import endpoint from "../API_URL";
 
 const EmployeeProfile = () => {
   const [employee, setEmployee] = useState({
@@ -87,7 +88,7 @@ const EmployeeProfile = () => {
   };
 
   try {
-    const res = await fetch("http://localhost:5000/api/employees", {
+    const res = await fetch(`${endpoint}/employees`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

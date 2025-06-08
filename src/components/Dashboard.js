@@ -88,7 +88,7 @@ const Dashboard = () => {
   }
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <Box sx={{ padding: 3 , marginLeft: "-230px"}}>
       <Typography variant="h4" gutterBottom>Dashboard Overview</Typography>
 
       {error && (

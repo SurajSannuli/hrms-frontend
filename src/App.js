@@ -37,7 +37,7 @@ function App() {
           }
         />
         <Route
-          path="/home"
+          path="/dashboard"
           element={
             <Layout>
               <HomePage />
