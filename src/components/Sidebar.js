@@ -39,10 +39,6 @@ const Sidebar = () => {
             <ListItemIcon><DashboardIcon /></ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItem>
-          <ListItem button onClick={() => navigate('/Masters')}>
-            <ListItemIcon><PeopleIcon /></ListItemIcon>
-            <ListItemText primary="Masters" />
-          </ListItem>
           <ListItem button onClick={() => navigate('/profile')}>
             <ListItemIcon><PeopleIcon /></ListItemIcon>
             <ListItemText primary="Employees" />

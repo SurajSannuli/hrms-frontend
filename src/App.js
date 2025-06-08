@@ -4,7 +4,6 @@ import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import LeavePage from './pages/LeavePage';
-import MasterPage from './pages/MasterPage';
 import HomePage from './pages/HomePage';
 import PayrollPage from './pages/PayrollPage'; // Note: Component names should be PascalCase
 import './App.css';
@@ -42,14 +41,6 @@ function App() {
           element={
             <Layout>
               <HomePage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/masters"
-          element={
-            <Layout>
-              <MasterPage />
             </Layout>
           }
         />

@@ -22,6 +22,7 @@ import dayjs from 'dayjs';
 
 const EmployeeProfile = () => {
   const [employee, setEmployee] = useState({
+    employeeId: "",
     name: "",
     gender: "",
     dob: null,
@@ -31,6 +32,7 @@ const EmployeeProfile = () => {
     joiningDate: null,
     basicSalary: "",
     allowance: "",
+    totalSalary: "",
     essPassword: "",
   });
 
@@ -44,10 +46,62 @@ const EmployeeProfile = () => {
     setEmployee({ ...employee, [key]: date });
   };
 
-  const handleAddEmployee = () => {
-    if (employee.name && employee.department) {
-      setEmployeeList([...employeeList, employee]);
+
+  const totalSalary = (basicSalary, allowance) =>
+  (parseFloat(basicSalary || 0) + parseFloat(allowance || 0)).toFixed(2);
+
+
+ const handleAddEmployee = async () => {
+  const {
+    employeeId,
+    name,
+    gender,
+    dob,
+    mailId,
+    department,
+    designation,
+    joiningDate,
+    basicSalary,
+    allowance,
+    essPassword
+  } = employee;
+
+  if (!name || !department || !designation || !mailId || !essPassword) {
+    alert("Please fill all required fields");
+    return;
+  }
+
+  const employeeData = {
+    employeeId,
+    name,
+    mailId,
+    department,
+    designation,
+    basicSalary,
+    allowance,
+    totalSalary: totalSalary(basicSalary, allowance),
+    gender,
+    dob: dayjs(dob).format("YYYY-MM-DD"),
+    joiningDate: dayjs(joiningDate).format("YYYY-MM-DD"),
+    essPassword
+  };
+
+  try {
+    const res = await fetch("http://localhost:5000/api/employees", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(employeeData)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Employee added successfully!");
+      setEmployeeList([...employeeList, employeeData]);
       setEmployee({
+        employeeId: "",
         name: "",
         gender: "",
         dob: null,
@@ -57,13 +111,17 @@ const EmployeeProfile = () => {
         joiningDate: null,
         basicSalary: "",
         allowance: "",
-        essPassword: "",
+        totalSalary: "",
+        essPassword: ""
       });
+    } else {
+      alert("Failed to add employee: " + (data.error || "Unknown error"));
     }
-  };
-
-  const totalSalary = (basic, allowance) =>
-    (parseFloat(basic || 0) + parseFloat(allowance || 0)).toFixed(2);
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error submitting employee");
+  }
+};
 
   return (
     <Box p={3}>
@@ -73,6 +131,15 @@ const EmployeeProfile = () => {
         </Typography>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            label="Employee ID"
+            name="employeeId"
+            value={employee.employeeId}
+            onChange={handleChange}
+            fullWidth
+            />
+          </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 label="Full Name"
@@ -173,6 +240,16 @@ const EmployeeProfile = () => {
                 type="number"
               />
             </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                label="Total Salary"
+                value={totalSalary(employee.basicSalary, employee.allowance)}
+                fullWidth
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+              </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
               <TextField

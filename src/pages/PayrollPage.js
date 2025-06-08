@@ -135,7 +135,7 @@ function PayrollPage() {
     <Box display="flex">
       <Sidebar />
       
-      <Box component="main" sx={{ flexGrow: 1, p: 30, marginTop: '60px',marginTop: '-230px' }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 30, marginTop: '60px',marginTop: '-230px' ,marginLeft:'-450px'}}>
         <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
           Payroll Calculation - {new Date(selectedYear, selectedMonth - 1).toLocaleString('default', { month: 'long' })} {selectedYear}
         </Typography>
