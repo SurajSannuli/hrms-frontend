@@ -1,282 +1,235 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 import {
-  TextField, Button, Paper, Typography, Box, Table,
-  TableHead, TableRow, TableCell, TableBody, Grid,
-  FormControl, InputLabel, Select, MenuItem, Snackbar, Alert
-} from '@mui/material';
-import Sidebar from '../components/Sidebar';
-import axios from 'axios';
+  Box,
+  Button,
+  Card,
+  Grid,
+  MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography
+} from "@mui/material";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
 
-function ProfilePage() {
-  const masterDepartments = ['Sales', 'HR', 'IT', 'Finance'];
-  const masterDesignations = {
-    Sales: ['On Ground', 'Team Lead', 'Manager'],
-    HR: ['Recruiter', 'HR Executive', 'HR Manager'],
-    IT: ['Developer', 'Tester', 'Project Manager'],
-    Finance: ['Accountant', 'Analyst']
-  };
-
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  
-  const [form, setForm] = useState({
-    employeeID: '',
-    name: '',
-    email: '',
-    department: '',
-    designation: '',
-    monthlyBasic: '',
-    monthlyAllowance: ''
+const EmployeeProfile = () => {
+  const [employee, setEmployee] = useState({
+    name: "",
+    gender: "",
+    dob: null,
+    mailId: "",
+    department: "",
+    designation: "",
+    joiningDate: null,
+    basicSalary: "",
+    allowance: "",
+    essPassword: "",
   });
 
-  // Fetch employees on component mount
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/api/employees');
-        setEmployees(response.data);
-      } catch (err) {
-        setError(err.response?.data?.error || 'Failed to fetch employees');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchEmployees();
-  }, []);
+  const [employeeList, setEmployeeList] = useState([]);
 
-  const handleAddEmployee = async () => {
-    const {
-      employeeID, name, email, department,
-      designation, monthlyBasic, monthlyAllowance
-    } = form;
+  const handleChange = (e) => {
+    setEmployee({ ...employee, [e.target.name]: e.target.value });
+  };
 
-    if (
-      !employeeID || !name || !email || !department ||
-      !designation || !monthlyBasic || !monthlyAllowance
-    ) {
-      setError('Please fill all fields');
-      return;
-    }
+  const handleDateChange = (key, date) => {
+    setEmployee({ ...employee, [key]: date });
+  };
 
-    try {
-      setLoading(true);
-      const response = await axios.post('/api/employees', {
-        employeeID,
-        name,
-        email,
-        department,
-        designation,
-        monthlyBasic: parseFloat(monthlyBasic),
-        monthlyAllowance: parseFloat(monthlyAllowance)
+  const handleAddEmployee = () => {
+    if (employee.name && employee.department) {
+      setEmployeeList([...employeeList, employee]);
+      setEmployee({
+        name: "",
+        gender: "",
+        dob: null,
+        mailId: "",
+        department: "",
+        designation: "",
+        joiningDate: null,
+        basicSalary: "",
+        allowance: "",
+        essPassword: "",
       });
-      
-      setEmployees([response.data, ...employees]);
-      setForm({
-        employeeID: '',
-        name: '',
-        email: '',
-        department: '',
-        designation: '',
-        monthlyBasic: '',
-        monthlyAllowance: ''
-      });
-      setSuccess('Employee added successfully');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to add employee');
-    } finally {
-      setLoading(false);
     }
   };
 
-  const calculateTotal = (basic, allowance) =>
+  const totalSalary = (basic, allowance) =>
     (parseFloat(basic || 0) + parseFloat(allowance || 0)).toFixed(2);
 
-  const handleCloseAlert = () => {
-    setError(null);
-    setSuccess(null);
-  };
-
   return (
-    <Box display="flex">
-      <Sidebar />
-
-      <Box component="main" sx={{ p: 30, marginTop: '-230px' }}>
-        
-
-          <Typography variant="h5" gutterBottom>Employee Profile</Typography>
-
-        {/* Add Employee Form */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h6" mb={2}>Add New Employee</Typography>
-
+    <Box p={3}>
+      <Card sx={{ p: 3, borderRadius: 3, boxShadow: 6 }}>
+        <Typography variant="h6" gutterBottom>
+          Add New Employee
+        </Typography>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Employee ID"
-                fullWidth
-                value={form.employeeID}
-                onChange={e => setForm({ ...form, employeeID: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={6} md={3}>
               <TextField
                 label="Full Name"
+                name="name"
+                value={employee.name}
+                onChange={handleChange}
                 fullWidth
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={6} md={2}>
+              <Select
+                displayEmpty
+                name="gender"
+                value={employee.gender}
+                onChange={handleChange}
+                fullWidth
+              >
+                <MenuItem value="" disabled>Gender</MenuItem>
+                <MenuItem value="Male">Male</MenuItem>
+                <MenuItem value="Female">Female</MenuItem>
+              </Select>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <DatePicker
+                label="Date of Birth"
+                value={employee.dob}
+                onChange={(date) => handleDateChange("dob", date)}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 label="Mail ID"
-                type="email"
+                name="mailId"
+                value={employee.mailId}
+                onChange={handleChange}
                 fullWidth
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Department</InputLabel>
-                <Select
-                  value={form.department}
-                  onChange={e =>
-                    setForm({
-                      ...form,
-                      department: e.target.value,
-                      designation: ''
-                    })
-                  }
-                  label="Department"
-                >
-                  {masterDepartments.map((dept, idx) => (
-                    <MenuItem key={idx} value={dept}>
-                      {dept}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Select
+                name="department"
+                value={employee.department}
+                onChange={handleChange}
+                displayEmpty
+                fullWidth
+              >
+                <MenuItem value="" disabled>Department</MenuItem>
+                <MenuItem value="HR">HR</MenuItem>
+                <MenuItem value="Finance">Finance</MenuItem>
+                <MenuItem value="Development">Development</MenuItem>
+              </Select>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Designation</InputLabel>
-                <Select
-                  value={form.designation}
-                  onChange={e => setForm({ ...form, designation: e.target.value })}
-                  label="Designation"
-                  disabled={!form.department}
-                >
-                  {(masterDesignations[form.department] || []).map((desig, idx) => (
-                    <MenuItem key={idx} value={desig}>
-                      {desig}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Select
+                name="designation"
+                value={employee.designation}
+                onChange={handleChange}
+                displayEmpty
+                fullWidth
+              >
+                <MenuItem value="" disabled>Designation</MenuItem>
+                <MenuItem value="HR Executive">HR Executive</MenuItem>
+                <MenuItem value="Manager">Manager</MenuItem>
+                <MenuItem value="Developer">Developer</MenuItem>
+              </Select>
             </Grid>
-            <Grid item xs={12} sm={6}>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <DatePicker
+                label="Joining Date"
+                value={employee.joiningDate}
+                onChange={(date) => handleDateChange("joiningDate", date)}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
               <TextField
                 label="Monthly Basic Salary"
-                type="number"
+                name="basicSalary"
+                value={employee.basicSalary}
+                onChange={handleChange}
                 fullWidth
-                value={form.monthlyBasic}
-                onChange={e => setForm({ ...form, monthlyBasic: e.target.value })}
+                type="number"
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+
+            <Grid item xs={12} sm={6} md={3}>
               <TextField
                 label="Monthly Allowance"
+                name="allowance"
+                value={employee.allowance}
+                onChange={handleChange}
+                fullWidth
                 type="number"
-                fullWidth
-                value={form.monthlyAllowance}
-                onChange={e => setForm({ ...form, monthlyAllowance: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+
+            <Grid item xs={12} sm={6} md={3}>
               <TextField
-                label="Total Monthly Salary"
-                value={calculateTotal(form.monthlyBasic, form.monthlyAllowance)}
+                label="ESS Password"
+                name="essPassword"
+                value={employee.essPassword}
+                onChange={handleChange}
                 fullWidth
-                InputProps={{ readOnly: true }}
+                type="password"
               />
             </Grid>
+
+            <Grid item xs={12}>
+              <Button variant="contained" fullWidth onClick={handleAddEmployee}>
+                ADD EMPLOYEE
+              </Button>
+            </Grid>
           </Grid>
-       
-        <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-          
+        </LocalizationProvider>
+      </Card>
 
-          <Grid container spacing={2}>
-            {/* ... (keep all your existing form fields) ... */}
-          </Grid>
-
-          <Box mt={3}>
-            <Button 
-              variant="contained" 
-              onClick={handleAddEmployee}
-              disabled={loading}
-            >
-              {loading ? 'Adding...' : 'Add Employee'}
-            </Button>
-          </Box>
-        </Paper>
-        </Paper>
-
-        {/* View Employee Table */}
-        <Typography variant="h6" gutterBottom>Employee List</Typography>
-        {loading && employees.length === 0 ? (
-          <Typography>Loading employees...</Typography>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Employee ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Mail ID</TableCell>
-                <TableCell>Department</TableCell>
-                <TableCell>Designation</TableCell>
-                <TableCell>Monthly Basic Salary</TableCell>
-                <TableCell>Monthly Allowance</TableCell>
-                <TableCell>Total Monthly Salary</TableCell>
+      <TableContainer component={Paper} sx={{ mt: 4 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Gender</TableCell>
+              <TableCell>Date of Birth</TableCell>
+              <TableCell>Mail ID</TableCell>
+              <TableCell>Department</TableCell>
+              <TableCell>Designation</TableCell>
+              <TableCell>Joining Date</TableCell>
+              <TableCell>Monthly Basic</TableCell>
+              <TableCell>Monthly Allowance</TableCell>
+              <TableCell>Total</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {employeeList.map((emp, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{emp.name}</TableCell>
+                <TableCell>{emp.gender}</TableCell>
+                <TableCell>{emp.dob ? dayjs(emp.dob).format("DD/MM/YYYY") : ""}</TableCell>
+                <TableCell>{emp.mailId}</TableCell>
+                <TableCell>{emp.department}</TableCell>
+                <TableCell>{emp.designation}</TableCell>
+                <TableCell>{emp.joiningDate ? dayjs(emp.joiningDate).format("DD/MM/YYYY") : ""}</TableCell>
+                <TableCell>{emp.basicSalary}</TableCell>
+                <TableCell>{emp.allowance}</TableCell>
+                <TableCell>{totalSalary(emp.basicSalary, emp.allowance)}</TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {employees.map(emp => (
-                <TableRow key={emp.id}>
-                  <TableCell>{emp.employee_id}</TableCell>
-                  <TableCell>{emp.name}</TableCell>
-                  <TableCell>{emp.email}</TableCell>
-                  <TableCell>{emp.department}</TableCell>
-                  <TableCell>{emp.designation}</TableCell>
-                  <TableCell>{emp.monthly_basic.toFixed(2)}</TableCell>
-                  <TableCell>{emp.monthly_allowance.toFixed(2)}</TableCell>
-                  <TableCell>
-                    {(emp.monthly_basic + emp.monthly_allowance).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </Box>
-
-      {/* Error/Success notifications */}
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseAlert}>
-        <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
-      </Snackbar>
-      
-      <Snackbar open={!!success} autoHideDuration={6000} onClose={handleCloseAlert}>
-        <Alert onClose={handleCloseAlert} severity="success" sx={{ width: '100%' }}>
-          {success}
-        </Alert>
-      </Snackbar>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
-}
+};
 
-export default ProfilePage;
+export default EmployeeProfile;
