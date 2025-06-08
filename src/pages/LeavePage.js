@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import axios from 'axios';
-import endpoint from '../API_URL';
+import { endpoint, status } from '../constants';
 
 function LeavePage() {
   const [leaves, setLeaves] = useState([]);
@@ -79,7 +79,7 @@ function LeavePage() {
       end_date: form.end_date,
       reason: form.reason,
       leave_days: form.days,
-      leave_status: 'Approved'
+      leave_status: status.approved
     };
 
     try {

@@ -19,7 +19,7 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import endpoint from "../API_URL";
+import {endpoint} from "../constants";
 
 const EmployeeProfile = () => {
   const [employee, setEmployee] = useState({
