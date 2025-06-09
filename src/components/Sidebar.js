@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Drawer,
   List,
@@ -12,18 +12,34 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import EventIcon from '@mui/icons-material/Event';
+import PaymentIcon from '@mui/icons-material/Payment';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import EditIcon from '@mui/icons-material/Edit';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [employeeOpen, setEmployeeOpen] = useState(false);
+
+  // Automatically expand sections based on current route
+  useEffect(() => {
+    setEmployeeOpen(location.pathname.startsWith('/profile') || location.pathname.startsWith('/employee'));
+    setLeaveOpen(location.pathname.startsWith('/leave'));
+  }, [location.pathname]);
 
   const handleLeaveClick = () => {
     setLeaveOpen(!leaveOpen);
+  };
+
+  const handleEmployeeClick = () => {
+    setEmployeeOpen(!employeeOpen);
   };
 
   return (
@@ -43,15 +59,33 @@ const Sidebar = () => {
       <Toolbar />
       <Box sx={{ overflow: 'auto' }}>
         <List>
-          <ListItem button onClick={() => navigate('/home')}>
+          <ListItem button onClick={() => navigate('/dashboard')}>
             <ListItemIcon><DashboardIcon /></ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItem>
-
-          <ListItem button onClick={() => navigate('/profile')}>
+        
+          <ListItem button onClick={handleEmployeeClick}>
             <ListItemIcon><PeopleIcon /></ListItemIcon>
-            <ListItemText primary="Employees" />
+            <ListItemText primary="Employee Profile" />
+            {employeeOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
+
+          <Collapse in={employeeOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/profile')}>
+                <ListItemIcon><PersonAddIcon /></ListItemIcon>
+                <ListItemText primary="Add Employee" />
+              </ListItem>
+              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/profile/editprofile')}>
+                <ListItemIcon><EditIcon /></ListItemIcon>
+                <ListItemText primary="Edit Employee" />
+              </ListItem>
+              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/profile/employeelist')}>
+                <ListItemIcon><ListAltIcon /></ListItemIcon>
+                <ListItemText primary="Employee List" />
+              </ListItem>
+            </List>
+          </Collapse>
 
           <ListItem button onClick={handleLeaveClick}>
             <ListItemIcon><EventIcon /></ListItemIcon>
@@ -61,10 +95,10 @@ const Sidebar = () => {
 
           <Collapse in={leaveOpen} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('leave/applyleave')}>
+              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/leave/applyleave')}>
                 <ListItemText primary="Apply Leave" />
               </ListItem>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('leave/leavehistory')}>
+              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/leave/leavehistory')}>
                 <ListItemText primary="Leave History" />
               </ListItem>
               <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/leave/approvals')}>
@@ -74,7 +108,7 @@ const Sidebar = () => {
           </Collapse>
 
           <ListItem button onClick={() => navigate('/payroll')}>
-            <ListItemIcon><EventIcon /></ListItemIcon>
+            <ListItemIcon><PaymentIcon /></ListItemIcon>
             <ListItemText primary="Payroll" />
           </ListItem>
         </List>

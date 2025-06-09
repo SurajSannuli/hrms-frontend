@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
-import Applyleave from './pages/Applyleave';
-import Leavehistory from './pages/Leavehistory';
+import EditProfile from './pages/EditProfile';
+import ApplyLeave from './pages/ApplyLeave';
+import LeaveHistory from './pages/LeaveHistory';
+import EmployeeList from './pages/EmployeeList';
 import HomePage from './pages/HomePage';
 import PayrollPage from './pages/PayrollPage'; // Note: Component names should be PascalCase
 import './App.css';
@@ -30,10 +32,26 @@ function App() {
           }
         />
         <Route
+          path="/profile/employeelist"
+          element={
+            <Layout>
+              <EmployeeList />
+            </Layout>
+          }
+        />
+        <Route
+          path="/profile/editprofile"
+          element={
+            <Layout>
+              <EditProfile />
+            </Layout>
+          }
+        />
+        <Route
           path="leave/applyleave"
           element={
             <Layout>
-              <Applyleave />
+              <ApplyLeave />
             </Layout>
           }
         />
@@ -41,7 +59,7 @@ function App() {
           path="leave/leavehistory"
           element={
             <Layout>
-              <Leavehistory />
+              <LeaveHistory />
             </Layout>
           }
         />
