@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
-import LeavePage from './pages/LeavePage';
+import Applyleave from './pages/Applyleave';
+import Leavehistory from './pages/Leavehistory';
 import HomePage from './pages/HomePage';
 import PayrollPage from './pages/PayrollPage'; // Note: Component names should be PascalCase
 import './App.css';
@@ -29,10 +30,18 @@ function App() {
           }
         />
         <Route
-          path="/leave"
+          path="leave/applyleave"
           element={
             <Layout>
-              <LeavePage />
+              <Applyleave />
+            </Layout>
+          }
+        />
+        <Route
+          path="leave/leavehistory"
+          element={
+            <Layout>
+              <Leavehistory />
             </Layout>
           }
         />
