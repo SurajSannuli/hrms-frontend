@@ -187,4 +187,3 @@ const LeaveHistory = () => {
 
 
 export default LeaveHistory;
-

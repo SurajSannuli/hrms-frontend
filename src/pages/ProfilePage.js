@@ -14,16 +14,26 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography
+  Typography,
+  IconButton,
+  InputAdornment
 } from "@mui/material";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import {endpoint} from "../constants";
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { endpoint } from "../constants";
 
 const EmployeeProfile = () => {
+  const [employeeList, setEmployeeList] = useState([]);
+
+  const generateEmployeeId = () => {
+    const nextId = employeeList.length + 1;
+    return `EMP${String(nextId).padStart(3, '0')}`;
+  };
+
   const [employee, setEmployee] = useState({
-    employeeId: "",
+    employeeId: "EMP004",
     name: "",
     gender: "",
     dob: null,
@@ -34,10 +44,10 @@ const EmployeeProfile = () => {
     basicSalary: "",
     allowance: "",
     totalSalary: "",
-    essPassword: "",
+    essPassword: ""
   });
 
-  const [employeeList, setEmployeeList] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setEmployee({ ...employee, [e.target.name]: e.target.value });
@@ -47,82 +57,80 @@ const EmployeeProfile = () => {
     setEmployee({ ...employee, [key]: date });
   };
 
-
   const totalSalary = (basicSalary, allowance) =>
-  (parseFloat(basicSalary || 0) + parseFloat(allowance || 0)).toFixed(2);
+    (parseFloat(basicSalary || 0) + parseFloat(allowance || 0)).toFixed(2);
 
+  const handleAddEmployee = async () => {
+    const {
+      employeeId,
+      name,
+      gender,
+      dob,
+      mailId,
+      department,
+      designation,
+      joiningDate,
+      basicSalary,
+      allowance,
+      essPassword
+    } = employee;
 
- const handleAddEmployee = async () => {
-  const {
-    employeeId,
-    name,
-    gender,
-    dob,
-    mailId,
-    department,
-    designation,
-    joiningDate,
-    basicSalary,
-    allowance,
-    essPassword
-  } = employee;
-
-  if (!name || !department || !designation || !mailId || !essPassword) {
-    alert("Please fill all required fields");
-    return;
-  }
-
-  const employeeData = {
-    employeeId,
-    name,
-    mailId,
-    department,
-    designation,
-    basicSalary,
-    allowance,
-    totalSalary: totalSalary(basicSalary, allowance),
-    gender,
-    dob: dayjs(dob).format("YYYY-MM-DD"),
-    joiningDate: dayjs(joiningDate).format("YYYY-MM-DD"),
-    essPassword
-  };
-
-  try {
-    const res = await fetch(`${endpoint}/employees`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(employeeData)
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      alert("Employee added successfully!");
-      setEmployeeList([...employeeList, employeeData]);
-      setEmployee({
-        employeeId: "",
-        name: "",
-        gender: "",
-        dob: null,
-        mailId: "",
-        department: "",
-        designation: "",
-        joiningDate: null,
-        basicSalary: "",
-        allowance: "",
-        totalSalary: "",
-        essPassword: ""
-      });
-    } else {
-      alert("Failed to add employee: " + (data.error || "Unknown error"));
+    if (!name || !department || !designation || !mailId || !essPassword) {
+      alert("Please fill all required fields");
+      return;
     }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Error submitting employee");
-  }
-};
+
+    const employeeData = {
+      employeeId,
+      name,
+      mailId,
+      department,
+      designation,
+      basicSalary,
+      allowance,
+      totalSalary: totalSalary(basicSalary, allowance),
+      gender,
+      dob: dayjs(dob).format("YYYY-MM-DD"),
+      joiningDate: dayjs(joiningDate).format("YYYY-MM-DD"),
+      essPassword
+    };
+
+    try {
+      const res = await fetch(`${endpoint}/employees`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(employeeData)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Employee added successfully!");
+        setEmployeeList([...employeeList, employeeData]);
+        setEmployee({
+          employeeId: `EMP${String(employeeList.length + 2).padStart(3, '0')}`,
+          name: "",
+          gender: "",
+          dob: null,
+          mailId: "",
+          department: "",
+          designation: "",
+          joiningDate: null,
+          basicSalary: "",
+          allowance: "",
+          totalSalary: "",
+          essPassword: ""
+        });
+      } else {
+        alert("Failed to add employee: " + (data.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error submitting employee");
+    }
+  };
 
   return (
     <Box p={3}>
@@ -132,15 +140,16 @@ const EmployeeProfile = () => {
         </Typography>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            label="Employee ID"
-            name="employeeId"
-            value={employee.employeeId}
-            onChange={handleChange}
-            fullWidth
-            />
-          </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                label="Generated Employee ID"
+                name="employeeId"
+                value={employee.employeeId}
+                fullWidth
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 label="Full Name"
@@ -150,6 +159,7 @@ const EmployeeProfile = () => {
                 fullWidth
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={2}>
               <Select
                 displayEmpty
@@ -163,6 +173,7 @@ const EmployeeProfile = () => {
                 <MenuItem value="Female">Female</MenuItem>
               </Select>
             </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <DatePicker
                 label="Date of Birth"
@@ -171,6 +182,7 @@ const EmployeeProfile = () => {
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 label="Mail ID"
@@ -241,6 +253,7 @@ const EmployeeProfile = () => {
                 type="number"
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 label="Total Salary"
@@ -250,7 +263,7 @@ const EmployeeProfile = () => {
                   readOnly: true,
                 }}
               />
-              </Grid>
+            </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
               <TextField
@@ -259,7 +272,19 @@ const EmployeeProfile = () => {
                 value={employee.essPassword}
                 onChange={handleChange}
                 fullWidth
-                type="password"
+                type={showPassword ? "text" : "password"}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
               />
             </Grid>
 

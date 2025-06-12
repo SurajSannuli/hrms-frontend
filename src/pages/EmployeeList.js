@@ -1,17 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Typography
 } from '@mui/material';
 
+const dummyEmployees = [
+  {
+    emp_id: 'EMP001',
+    name: 'Suraj Sannuli',
+    gender: 'Male',
+    dob: '1995-08-15',
+    email: 'suraj@example.com',
+    department: 'IT',
+    designation: 'Software Engineer',
+    joining_date: '2022-04-10',
+    monthly_basic: 30000,
+    monthly_allowance: 8000
+  },
+  {
+    emp_id: 'EMP002',
+    name: 'Priya Sharma',
+    gender: 'Female',
+    dob: '1992-12-05',
+    email: 'priya@example.com',
+    department: 'HR',
+    designation: 'HR Manager',
+    joining_date: '2021-07-01',
+    monthly_basic: 40000,
+    monthly_allowance: 10000
+  },
+  {
+    emp_id: 'EMP003',
+    name: 'Ravi Kumar',
+    gender: 'Male',
+    dob: '1990-03-22',
+    email: 'ravi@example.com',
+    department: 'Finance',
+    designation: 'Accountant',
+    joining_date: '2020-01-15',
+    monthly_basic: 28000,
+    monthly_allowance: 5000
+  }
+];
+
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/employees')
-      .then(response => setEmployees(response.data))
-      .catch(error => console.error('Error fetching employees:', error));
+    // No API call, using dummy data instead
+    setEmployees(dummyEmployees);
   }, []);
 
   return (

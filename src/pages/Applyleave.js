@@ -102,7 +102,7 @@ function LeavePage() {
   return (
     <Box display="flex" sx={{ height: '100vh' }}>
       <Sidebar />
-      <Box sx={{ flexGrow: 1, p: 30, overflow: 'auto', marginTop: '-230px' }}>
+      <Box sx={{ flexGrow: 1, p: 30, overflow: 'auto', marginTop: '-230px', marginLeft:'-450px' }}>
         <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>Leave Management</Typography>
 
         <Paper elevation={3} sx={{ p: 3, mb: 4, maxWidth: 600 }}>
@@ -185,7 +185,7 @@ function LeavePage() {
           <Button variant="contained" onClick={applyLeave}>Apply</Button>
         </Paper>
 
-        <Paper elevation={3} sx={{ p: 2 }}>
+        {/* <Paper elevation={3} sx={{ p: 2 }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>Leave History</Typography>
           <TableContainer sx={{ maxHeight: 400 }}>
             <Table size="small" stickyHeader>
@@ -230,7 +230,7 @@ function LeavePage() {
               </TableBody>
             </Table>
           </TableContainer>
-        </Paper>
+        </Paper> */}
       </Box>
     </Box>
   );

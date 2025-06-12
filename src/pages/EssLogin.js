@@ -22,7 +22,6 @@ function LoginPage() {
     }
   };
 
-  // Determine alternate link based on current path
   const isESS = location.pathname === '/ess';
   const togglePath = isESS ? '/' : '/ess';
   const toggleLabel = isESS ? 'Access HR Login' : 'Access Self Service (ESS)';

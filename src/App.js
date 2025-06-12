@@ -8,6 +8,9 @@ import ApplyLeave from './pages/ApplyLeave';
 import LeaveHistory from './pages/LeaveHistory';
 import EmployeeList from './pages/EmployeeList';
 import HomePage from './pages/HomePage';
+import EssDashboard from './pages/EssDashboard';
+import EssLogin from './pages/EssLogin';
+import ApprovalPage from './pages/ApprovalPage';
 import PayrollPage from './pages/PayrollPage'; // Note: Component names should be PascalCase
 import './App.css';
 
@@ -23,11 +26,21 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/ess" element={<EssLogin />} />
+
         <Route
           path="/profile"
           element={
             <Layout>
               <ProfilePage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/leave/approvals"
+          element={
+            <Layout>
+              <ApprovalPage />
             </Layout>
           }
         />
@@ -68,6 +81,14 @@ function App() {
           element={
             <Layout>
               <HomePage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/EssDashboard"
+          element={
+            <Layout>
+              <EssDashboard />
             </Layout>
           }
         />
