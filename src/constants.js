@@ -1,10 +1,13 @@
-const endpoint = 'http://localhost:5000/api';
+const endpoint = "http://localhost:5000/api";
 
 const status = {
-     pending: "PENDING",
-     approved: "APPROVED",
-     rejected: "REJECTED"
-}
+  pending: "PENDING",
+  approved: "APPROVED",
+  rejected: "REJECTED",
+};
 
-export { endpoint, status };
+const leaveType = {
+  unpaid: "Unpaid",
+};
 
+export { endpoint, status, leaveType };

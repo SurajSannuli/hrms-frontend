@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, message, Spin, Tag } from 'antd';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+// frontend/src/pages/ApprovalPage.js
+
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, message, Spin, Tag } from "antd";
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { endpoint } from "../constants";
 
 const ApprovalPage = () => {
   const [pendingLeaves, setPendingLeaves] = useState([]);
@@ -16,72 +20,42 @@ const ApprovalPage = () => {
   const fetchPendingLeaves = async () => {
     try {
       setLoading(true);
-
-      // Dummy leave data
-      const dummyData = [
-        {
-          id: 1,
-          employeeName: 'John Doe',
-          leaveType: 'Sick Leave',
-          startDate: '2025-06-10',
-          endDate: '2025-06-12',
-          days: 3,
-          reason: 'Fever and doctor’s advice',
-          appliedDate: '2025-06-08',
-          comments: 'Need rest as advised',
-        },
-        {
-          id: 2,
-          employeeName: 'Jane Smith',
-          leaveType: 'Annual Leave',
-          startDate: '2025-06-15',
-          endDate: '2025-06-20',
-          days: 6,
-          reason: 'Family vacation',
-          appliedDate: '2025-06-09',
-        },
-        {
-          id: 3,
-          employeeName: 'Rahul Kumar',
-          leaveType: 'Parental Leave',
-          startDate: '2025-06-05',
-          endDate: '2025-06-25',
-          days: 21,
-          reason: 'New baby born',
-          appliedDate: '2025-06-01',
-        },
-      ];
-
-      // Simulate API delay
-      setTimeout(() => {
-        setPendingLeaves(dummyData);
-        setLoading(false);
-      }, 1000);
-
+      const response = await axios.get(`${endpoint}/leaves/pending`);
+      setPendingLeaves(response.data);
     } catch (error) {
-      message.error('Failed to fetch pending leaves');
+      console.error(error);
+      message.error("Failed to fetch pending leaves");
+    } finally {
       setLoading(false);
     }
   };
 
   const handleApprove = async (leaveId) => {
-    setActionLoading(true);
-    setTimeout(() => {
-      message.success(`Leave ID ${leaveId} approved (mock)`);
-      setPendingLeaves((prev) => prev.filter((leave) => leave.id !== leaveId));
+    try {
+      setActionLoading(true);
+      await axios.put(`${endpoint}/leaves/${leaveId}/approve`);
+      message.success(`Leave ID ${leaveId} approved`);
+      fetchPendingLeaves();
+    } catch (error) {
+      message.error("Approval failed");
+    } finally {
       setActionLoading(false);
       setModalVisible(false);
-    }, 800);
+    }
   };
 
   const handleReject = async (leaveId) => {
-    setActionLoading(true);
-    setTimeout(() => {
-      message.success(`Leave ID ${leaveId} rejected (mock)`);
-      setPendingLeaves((prev) => prev.filter((leave) => leave.id !== leaveId));
+    try {
+      setActionLoading(true);
+      await axios.put(`${endpoint}/leaves/${leaveId}/reject`);
+      message.success(`Leave ID ${leaveId} rejected`);
+      fetchPendingLeaves();
+    } catch (error) {
+      message.error("Rejection failed");
+    } finally {
       setActionLoading(false);
       setModalVisible(false);
-    }, 800);
+    }
   };
 
   const showLeaveDetails = (leave) => {
@@ -90,90 +64,63 @@ const ApprovalPage = () => {
   };
 
   const columns = [
+    { title: "Employee", dataIndex: "employee_name" },
     {
-      title: 'Employee',
-      dataIndex: 'employeeName',
-      key: 'employeeName',
-    },
-    {
-      title: 'Leave Type',
-      dataIndex: 'leaveType',
-      key: 'leaveType',
+      title: "Leave Type",
+      dataIndex: "leave_type",
       render: (text) => <Tag color="blue">{text}</Tag>,
     },
     {
-      title: 'Start Date',
-      dataIndex: 'startDate',
-      key: 'startDate',
-      render: (text) => new Date(text).toLocaleDateString(),
+      title: "Start Date",
+      dataIndex: "start_date",
+      render: (d) => new Date(d).toLocaleDateString(),
     },
     {
-      title: 'End Date',
-      dataIndex: 'endDate',
-      key: 'endDate',
-      render: (text) => new Date(text).toLocaleDateString(),
+      title: "End Date",
+      dataIndex: "end_date",
+      render: (d) => new Date(d).toLocaleDateString(),
+    },
+    { title: "Days", dataIndex: "leave_days" },
+    { title: "Reason", dataIndex: "reason", ellipsis: true },
+    {
+      title: "Applied On",
+      dataIndex: "applied_date",
+      render: (d) => new Date(d).toLocaleDateString(),
     },
     {
-      title: 'Days',
-      dataIndex: 'days',
-      key: 'days',
-    },
-    {
-      title: 'Reason',
-      dataIndex: 'reason',
-      key: 'reason',
-      ellipsis: true,
-    },
-    {
-      title: 'Applied On',
-      dataIndex: 'appliedDate',
-      key: 'appliedDate',
-      render: (text) => new Date(text).toLocaleDateString(),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
       render: (_, record) => (
-        <div>
+        <>
           <Button
-            type="text"
             icon={<CheckOutlined />}
-            style={{ color: 'green' }}
+            style={{ color: "green" }}
             onClick={() => handleApprove(record.id)}
             loading={actionLoading}
           />
           <Button
-            type="text"
             icon={<CloseOutlined />}
-            style={{ color: 'red' }}
+            style={{ color: "red" }}
             onClick={() => handleReject(record.id)}
             loading={actionLoading}
           />
           <Button type="link" onClick={() => showLeaveDetails(record)}>
             Details
           </Button>
-        </div>
+        </>
       ),
     },
   ];
 
   return (
-    <div className="approval-page" style={{ padding: '20px' }}>
+    <div style={{ padding: 20 }}>
       <h2>Pending Leave Approvals</h2>
-
       {loading ? (
         <Spin size="large" />
       ) : (
         <>
-          <Table
-            columns={columns}
-            dataSource={pendingLeaves}
-            rowKey="id"
-            pagination={{ pageSize: 10 }}
-          />
-
+          <Table columns={columns} dataSource={pendingLeaves} rowKey="id" />
           <Modal
-            title="Leave Request Details"
+            title="Leave Details"
             open={modalVisible}
             onCancel={() => setModalVisible(false)}
             footer={[
@@ -183,8 +130,7 @@ const ApprovalPage = () => {
               <Button
                 key="approve"
                 type="primary"
-                style={{ backgroundColor: 'green', borderColor: 'green' }}
-                onClick={() => handleApprove(selectedLeave?.id)}
+                onClick={() => handleApprove(selectedLeave.id)}
                 loading={actionLoading}
               >
                 Approve
@@ -192,7 +138,7 @@ const ApprovalPage = () => {
               <Button
                 key="reject"
                 danger
-                onClick={() => handleReject(selectedLeave?.id)}
+                onClick={() => handleReject(selectedLeave.id)}
                 loading={actionLoading}
               >
                 Reject
@@ -200,26 +146,21 @@ const ApprovalPage = () => {
             ]}
           >
             {selectedLeave && (
-              <div>
+              <>
                 <p>
-                  <strong>Employee:</strong> {selectedLeave.employeeName}
+                  <b>Employee:</b> {selectedLeave.employee_name}
                 </p>
                 <p>
-                  <strong>Leave Type:</strong> {selectedLeave.leaveType}
+                  <b>Type:</b> {selectedLeave.leave_type}
                 </p>
                 <p>
-                  <strong>Period:</strong> {new Date(selectedLeave.startDate).toLocaleDateString()} to{' '}
-                  {new Date(selectedLeave.endDate).toLocaleDateString()} ({selectedLeave.days} days)
+                  <b>Period:</b> {selectedLeave.start_date} to{" "}
+                  {selectedLeave.end_date}
                 </p>
                 <p>
-                  <strong>Reason:</strong> {selectedLeave.reason}
+                  <b>Reason:</b> {selectedLeave.reason}
                 </p>
-                {selectedLeave.comments && (
-                  <p>
-                    <strong>Comments:</strong> {selectedLeave.comments}
-                  </p>
-                )}
-              </div>
+              </>
             )}
           </Modal>
         </>

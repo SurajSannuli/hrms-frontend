@@ -1,3 +1,5 @@
+// frontend/src/pages/EditProfilePage.js
+
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -11,12 +13,14 @@ import {
   Typography,
   Divider,
   IconButton,
-  InputAdornment
+  InputAdornment,
 } from "@mui/material";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import axios from "axios";
+import { endpoint } from "../constants";
 
 const EditProfilePage = () => {
   const [employees, setEmployees] = useState([]);
@@ -41,50 +45,35 @@ const EditProfilePage = () => {
     fetchEmployees();
   }, []);
 
-  // 🔹 Dummy Data for Testing
   const fetchEmployees = async () => {
-    const dummyData = [
-      {
-        employeeId: "EMP001",
-        name: "John Doe",
-        gender: "Male",
-        dob: "1990-03-15",
-        mailId: "john.doe@example.com",
-        department: "Development",
-        designation: "Developer",
-        joiningDate: "2022-01-10",
-        basicSalary: "50000",
-        allowance: "10000",
-        totalSalary: "60000",
-        essPassword: "john123"
-      },
-      {
-        employeeId: "EMP002",
-        name: "Jane Smith",
-        gender: "Female",
-        dob: "1988-07-22",
-        mailId: "jane.smith@example.com",
-        department: "HR",
-        designation: "HR Executive",
-        joiningDate: "2021-06-05",
-        basicSalary: "45000",
-        allowance: "8000",
-        totalSalary: "53000",
-        essPassword: "jane123"
-      }
-    ];
-    setEmployees(dummyData);
+    try {
+      const res = await axios.get(`${endpoint}/get-employees`);
+      setEmployees(res.data);
+    } catch (err) {
+      console.error("Failed to fetch employees:", err);
+    }
   };
 
   const handleEmployeeSelect = (e) => {
     const empId = e.target.value;
     setSelectedEmployeeId(empId);
-    const selectedEmp = employees.find(emp => emp.employeeId === empId);
+    const selectedEmp = employees.find((emp) => emp.employee_id === empId);
     if (selectedEmp) {
       setEmployee({
-        ...selectedEmp,
+        employeeId: selectedEmp.employee_id,
+        name: selectedEmp.name,
+        gender: selectedEmp.gender,
         dob: selectedEmp.dob ? dayjs(selectedEmp.dob) : null,
-        joiningDate: selectedEmp.joiningDate ? dayjs(selectedEmp.joiningDate) : null
+        mailId: selectedEmp.mail,
+        department: selectedEmp.department,
+        designation: selectedEmp.designation,
+        joiningDate: selectedEmp.joining_date
+          ? dayjs(selectedEmp.joining_date)
+          : null,
+        basicSalary: selectedEmp.basic_salary,
+        allowance: selectedEmp.allowance,
+        totalSalary: selectedEmp.total_salary,
+        essPassword: selectedEmp.ess_password,
       });
     }
   };
@@ -100,15 +89,27 @@ const EditProfilePage = () => {
   const totalSalary = (basicSalary, allowance) =>
     (parseFloat(basicSalary || 0) + parseFloat(allowance || 0)).toFixed(2);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedData = {
       ...employee,
       dob: employee.dob ? dayjs(employee.dob).format("YYYY-MM-DD") : null,
-      joiningDate: employee.joiningDate ? dayjs(employee.joiningDate).format("YYYY-MM-DD") : null,
-      totalSalary: totalSalary(employee.basicSalary, employee.allowance)
+      joiningDate: employee.joiningDate
+        ? dayjs(employee.joiningDate).format("YYYY-MM-DD")
+        : null,
+      totalSalary: totalSalary(employee.basicSalary, employee.allowance),
     };
-    console.log("Updated Employee Data:", updatedData);
-    alert("Mock Save: Changes logged to console.");
+
+    try {
+      await axios.put(
+        `${endpoint}/update-employee/${employee.employeeId}`,
+        updatedData
+      );
+      alert("Profile updated successfully");
+      fetchEmployees();
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Update failed");
+    }
   };
 
   return (
@@ -128,8 +129,8 @@ const EditProfilePage = () => {
             >
               <MenuItem value="">Select Employee to Edit</MenuItem>
               {employees.map((emp) => (
-                <MenuItem key={emp.employeeId} value={emp.employeeId}>
-                  {emp.name} ({emp.employeeId})
+                <MenuItem key={emp.employee_id} value={emp.employee_id}>
+                  {emp.name} ({emp.employee_id})
                 </MenuItem>
               ))}
             </Select>
@@ -165,7 +166,9 @@ const EditProfilePage = () => {
                 onChange={handleChange}
                 fullWidth
               >
-                <MenuItem value="" disabled>Gender</MenuItem>
+                <MenuItem value="" disabled>
+                  Gender
+                </MenuItem>
                 <MenuItem value="Male">Male</MenuItem>
                 <MenuItem value="Female">Female</MenuItem>
               </Select>
@@ -195,7 +198,9 @@ const EditProfilePage = () => {
                 displayEmpty
                 fullWidth
               >
-                <MenuItem value="" disabled>Department</MenuItem>
+                <MenuItem value="" disabled>
+                  Department
+                </MenuItem>
                 <MenuItem value="HR">HR</MenuItem>
                 <MenuItem value="Finance">Finance</MenuItem>
                 <MenuItem value="Development">Development</MenuItem>
@@ -209,7 +214,9 @@ const EditProfilePage = () => {
                 displayEmpty
                 fullWidth
               >
-                <MenuItem value="" disabled>Designation</MenuItem>
+                <MenuItem value="" disabled>
+                  Designation
+                </MenuItem>
                 <MenuItem value="HR Executive">HR Executive</MenuItem>
                 <MenuItem value="Manager">Manager</MenuItem>
                 <MenuItem value="Developer">Developer</MenuItem>
@@ -262,16 +269,23 @@ const EditProfilePage = () => {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setShowPassword(!showPassword)}>
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
-                  )
+                  ),
                 }}
               />
             </Grid>
             <Grid item xs={12}>
-              <Button variant="contained" fullWidth color="success" onClick={handleSave}>
+              <Button
+                variant="contained"
+                fullWidth
+                color="success"
+                onClick={handleSave}
+              >
                 SAVE CHANGES
               </Button>
             </Grid>

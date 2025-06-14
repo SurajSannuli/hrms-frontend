@@ -1,39 +1,53 @@
 // LeavePage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  TextField, Button, Paper, Typography, Box, Table, TableHead,
-  TableRow, TableCell, TableBody, Chip, MenuItem, Select, InputLabel,
-  FormControl, TableContainer
-} from '@mui/material';
-import Sidebar from '../components/Sidebar';
-import axios from 'axios';
-import { endpoint, status } from '../constants';
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  Box,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  TableContainer,
+} from "@mui/material";
+import Sidebar from "../components/Sidebar";
+import axios from "axios";
+import { endpoint, leaveType, status } from "../constants";
 
 function LeavePage() {
   const [leaves, setLeaves] = useState([]);
   const [form, setForm] = useState({
-    employee: '',
-    leaveType: '',
-    start_date: '',
-    end_date: '',
-    reason: '',
-    days: 0
+    employee: "",
+    leaveType: "",
+    start_date: "",
+    end_date: "",
+    reason: "",
+    days: 0,
   });
 
   const [leaveTypes] = useState([
-    'Annual Leave',
-    'Sick Leave',
-    'Maternity Leave',
-    'Paternity Leave',
-    'Unpaid Leave'
+    "Annual Leave",
+    "Sick Leave",
+    "Maternity Leave",
+    "Paternity Leave",
+    `${leaveType.unpaid} Leave`,
   ]);
 
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
-    axios.get(`${endpoint}/get-employees`)
-      .then(res => setEmployees(res.data))
-      .catch(err => console.error('Failed to fetch employees', err));
+    axios
+      .get(`${endpoint}/get-employees`)
+      .then((res) => setEmployees(res.data))
+      .catch((err) => console.error("Failed to fetch employees", err));
   }, []);
 
   const calculateWorkingDays = (startDate, endDate) => {
@@ -55,7 +69,10 @@ function LeavePage() {
   const handleDateChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...form, [name]: value };
-    updatedForm.days = calculateWorkingDays(updatedForm.start_date, updatedForm.end_date);
+    updatedForm.days = calculateWorkingDays(
+      updatedForm.start_date,
+      updatedForm.end_date
+    );
     setForm(updatedForm);
   };
 
@@ -65,12 +82,19 @@ function LeavePage() {
   };
 
   const applyLeave = async () => {
-    if (!form.employee || !form.start_date || !form.end_date || !form.leaveType) {
-      alert('Please fill all required fields');
+    if (
+      !form.employee ||
+      !form.start_date ||
+      !form.end_date ||
+      !form.leaveType
+    ) {
+      alert("Please fill all required fields");
       return;
     }
 
-    const selectedEmployee = employees.find(emp => emp.employee_id === form.employee);
+    const selectedEmployee = employees.find(
+      (emp) => emp.employee_id === form.employee
+    );
     const payload = {
       employee_id: selectedEmployee.employee_id,
       employee_name: selectedEmployee.name,
@@ -79,19 +103,19 @@ function LeavePage() {
       end_date: form.end_date,
       reason: form.reason,
       leave_days: form.days,
-      leave_status: status.approved
+      leave_status: status.approved,
     };
 
     try {
       await axios.post(`${endpoint}/applyleave`, payload);
       setLeaves([...leaves, { id: Date.now(), ...payload }]);
       setForm({
-        employee: '',
-        leaveType: '',
-        start_date: '',
-        end_date: '',
-        reason: '',
-        days: 0
+        employee: "",
+        leaveType: "",
+        start_date: "",
+        end_date: "",
+        reason: "",
+        days: 0,
       });
     } catch (error) {
       console.error("Failed to apply leave:", error);
@@ -100,13 +124,25 @@ function LeavePage() {
   };
 
   return (
-    <Box display="flex" sx={{ height: '100vh' }}>
+    <Box display="flex" sx={{ height: "100vh" }}>
       <Sidebar />
-      <Box sx={{ flexGrow: 1, p: 30, overflow: 'auto', marginTop: '-230px', marginLeft:'-450px' }}>
-        <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>Leave Management</Typography>
+      <Box
+        sx={{
+          flexGrow: 1,
+          p: 30,
+          overflow: "auto",
+          marginTop: "-230px",
+          marginLeft: "-450px",
+        }}
+      >
+        <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+          Leave Management
+        </Typography>
 
         <Paper elevation={3} sx={{ p: 3, mb: 4, maxWidth: 600 }}>
-          <Typography variant="h6" mb={2}>Apply for Leave</Typography>
+          <Typography variant="h6" mb={2}>
+            Apply for Leave
+          </Typography>
 
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Employee</InputLabel>
@@ -117,7 +153,7 @@ function LeavePage() {
               label="Employee"
               required
             >
-              {employees.map(emp => (
+              {employees.map((emp) => (
                 <MenuItem key={emp.employee_id} value={emp.employee_id}>
                   {emp.employee_id} - {emp.name}
                 </MenuItem>
@@ -135,12 +171,14 @@ function LeavePage() {
               required
             >
               {leaveTypes.map((type, index) => (
-                <MenuItem key={index} value={type}>{type}</MenuItem>
+                <MenuItem key={index} value={type}>
+                  {type}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
             <TextField
               label="Start Date"
               name="start_date"
@@ -182,55 +220,10 @@ function LeavePage() {
             sx={{ mb: 2 }}
           />
 
-          <Button variant="contained" onClick={applyLeave}>Apply</Button>
+          <Button variant="contained" onClick={applyLeave}>
+            Apply
+          </Button>
         </Paper>
-
-        {/* <Paper elevation={3} sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>Leave History</Typography>
-          <TableContainer sx={{ maxHeight: 400 }}>
-            <Table size="small" stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Employee</TableCell>
-                  <TableCell>Leave Type</TableCell>
-                  <TableCell>Start Date</TableCell>
-                  <TableCell>End Date</TableCell>
-                  <TableCell>Days</TableCell>
-                  <TableCell>Reason</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {leaves.map(leave => (
-                  <TableRow key={leave.id} hover>
-                    <TableCell>{leave.employee_name}</TableCell>
-                    <TableCell>{leave.leaveType}</TableCell>
-                    <TableCell>{leave.start_date}</TableCell>
-                    <TableCell>{leave.end_date}</TableCell>
-                    <TableCell>{leave.days}</TableCell>
-                    <TableCell sx={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: 150
-                    }}>
-                      {leave.reason}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={leave.status}
-                        color={
-                          leave.status === 'Approved' ? 'success' :
-                          leave.status === 'Rejected' ? 'error' : 'warning'
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper> */}
       </Box>
     </Box>
   );

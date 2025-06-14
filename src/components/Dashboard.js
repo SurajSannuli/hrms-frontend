@@ -1,19 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
   Typography,
   Grid,
   CircularProgress,
-  Alert
-} from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
-import EventBusyIcon from '@mui/icons-material/EventBusy';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
-
+  Alert,
+} from "@mui/material";
+import PeopleIcon from "@mui/icons-material/People";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import {
   BarChart,
   Bar,
@@ -22,20 +20,26 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
-} from 'recharts';
+  ResponsiveContainer,
+} from "recharts";
+import { endpoint } from "../constants";
 
 const StatCard = ({ icon, title, value, color }) => (
-  <Paper elevation={3} sx={{ 
-    padding: 2, 
-    height: '100%', 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 2 
-  }}>
+  <Paper
+    elevation={3}
+    sx={{
+      padding: 2,
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      gap: 2,
+    }}
+  >
     <Box sx={{ fontSize: 40, color }}>{icon}</Box>
     <Box>
-      <Typography variant="subtitle1" color="textSecondary">{title}</Typography>
+      <Typography variant="subtitle1" color="textSecondary">
+        {title}
+      </Typography>
       <Typography variant="h5">{value}</Typography>
     </Box>
   </Paper>
@@ -49,30 +53,15 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch('/api/dashboard');
+        const response = await fetch(`${endpoint}/dashboard`);
         if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
+          throw new Error("Failed to fetch dashboard data");
         }
         const data = await response.json();
         setDashboardData(data);
       } catch (err) {
         console.error(err);
         setError("Could not load dashboard data. Showing sample data.");
-        setDashboardData({
-          totalEmployees: 42,
-          employeesOnLeave: 5,
-          monthlyPayroll: 125000,
-          newestEmployee: {
-            name: "Alex Johnson",
-            position: "Frontend Developer",
-            joinDate: "2023-06-01"
-          },
-          genderDistribution: [
-            { name: 'Male', value: 25 },
-            { name: 'Female', value: 17 },
-            { name: 'Other', value: 2 }
-          ]
-        });
       } finally {
         setLoading(false);
       }
@@ -82,22 +71,29 @@ const Dashboard = () => {
   }, []);
 
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="60vh"
+        ml="240px"
+      >
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ padding: 3,marginLeft:'-250px' }}>
-      <Typography variant="h4" gutterBottom>Dashboard Overview</Typography>
-
+    <Box sx={{ padding: 3, marginLeft: "-230px" }}>
+      <Typography variant="h4" gutterBottom>
+        Dashboard Overview
+      </Typography>
       {error && (
         <Box mb={2}>
           <Alert severity="warning">{error}</Alert>
@@ -121,17 +117,15 @@ const Dashboard = () => {
             value={dashboardData.employeesOnLeave}
             color="#d32f2f"
           />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              icon={<CurrencyRupeeIcon />}
-              title="Monthly Payroll"
-              value={`₹${dashboardData.monthlyPayroll.toLocaleString()}`}
-              color="#388e3c"
-            />
-          </Grid>
-
-                  
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<AttachMoneyIcon />}
+            title="Monthly Payroll"
+            value={`₹${dashboardData.monthlyPayroll.toLocaleString()}`}
+            color="#388e3c"
+          />
+        </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<PersonAddIcon />}
@@ -141,39 +135,55 @@ const Dashboard = () => {
           />
         </Grid>
       </Grid>
-
-      {/* Second Row - Gender Chart and Newest Team Member */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Paper elevation={3} sx={{ p: 2, height: 400 }}>
-            <Typography variant="h6" gutterBottom>Gender Distribution</Typography>
-            <ResponsiveContainer width="100%" height="90%">
+      <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Paper elevation={3} sx={{ p: 2, height: 300 }}>
+            <Typography variant="h6" gutterBottom>
+              Gender Distribution
+            </Typography>
+            <ResponsiveContainer width="100%" height="80%">
               <BarChart data={dashboardData.genderDistribution}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="value" fill="#8884d8" name="Number of Employees" />
+                <Bar
+                  dataKey="value"
+                  fill="#8884d8"
+                  name="Number of Employees"
+                />
               </BarChart>
             </ResponsiveContainer>
           </Paper>
         </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 2, height: 400 }}>
-            <Typography variant="h6" gutterBottom>Newest Team Member</Typography>
-            <Box display="flex" flexDirection="column" height="100%" justifyContent="center">
-              <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <PersonAddIcon color="primary" sx={{ fontSize: 40 }} />
-                <Box>
-                  <Typography variant="h5">{dashboardData.newestEmployee.name}</Typography>
-                  <Typography color="textSecondary">{dashboardData.newestEmployee.position}</Typography>
+        <Grid item xs={12} sm={6} md={3}>
+          <Paper elevation={3} sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Newest Team Member
+            </Typography>
+            <Box display="flex" alignItems="center" gap={2} mt={2}>
+              <PersonAddIcon color="primary" sx={{ fontSize: 40 }} />
+              <Box>
+                <Typography variant="h5">
+                  {dashboardData.newestEmployee.name}
+                </Typography>
+                <Typography color="textSecondary">
+                  {dashboardData.newestEmployee.position}
+                </Typography>
+                <Box display="flex" alignItems="center" mt={1}>
+                  <AccessTimeIcon color="action" sx={{ mr: 1 }} />
+                  <Typography>
+                    Joined on{" "}
+                    {formatDate(dashboardData.newestEmployee.joinDate)}
+                  </Typography>
                 </Box>
               </Box>
               <Box display="flex" alignItems="center">
                 <AccessTimeIcon color="action" sx={{ mr: 1 }} />
-                <Typography>Joined on {formatDate(dashboardData.newestEmployee.joinDate)}</Typography>
+                <Typography>
+                  Joined on {formatDate(dashboardData.newestEmployee.joinDate)}
+                </Typography>
               </Box>
             </Box>
           </Paper>
