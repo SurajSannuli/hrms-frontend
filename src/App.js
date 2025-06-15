@@ -28,13 +28,13 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/ess" element={<LoginPage />} />
-        <Route path="/admin" element={<AdminLoginPage />} />
+        <Route path="/" element={<AdminLoginPage />} />
 
-        {/* ESS Routes */}
+        {/* ESS + Admin Shared Routes */}
         <Route
           path="/profile"
           element={
-            <ProtectedRoute allowedRoles={["ess"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <Layout>
                 <ProfilePage />
               </Layout>
@@ -44,7 +44,7 @@ function App() {
         <Route
           path="/profile/editprofile"
           element={
-            <ProtectedRoute allowedRoles={["ess"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <Layout>
                 <EditProfile />
               </Layout>
@@ -54,7 +54,7 @@ function App() {
         <Route
           path="/leave/applyleave"
           element={
-            <ProtectedRoute allowedRoles={["ess"]}>
+            <ProtectedRoute allowedRoles={["ess", "admin"]}>
               <Layout>
                 <ApplyLeave />
               </Layout>
@@ -64,13 +64,15 @@ function App() {
         <Route
           path="/leave/leavehistory"
           element={
-            <ProtectedRoute allowedRoles={["ess"]}>
+            <ProtectedRoute allowedRoles={["ess", "admin"]}>
               <Layout>
                 <LeaveHistory />
               </Layout>
             </ProtectedRoute>
           }
         />
+
+        {/* ESS Dashboard */}
         <Route
           path="/EssDashboard"
           element={
@@ -82,7 +84,7 @@ function App() {
           }
         />
 
-        {/* Admin Routes */}
+        {/* Admin Dashboard */}
         <Route
           path="/dashboard"
           element={

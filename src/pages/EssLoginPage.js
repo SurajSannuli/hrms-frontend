@@ -17,6 +17,7 @@ function LoginPage() {
       });
       if (res.data.success) {
         localStorage.setItem("role", "ess");
+        localStorage.setItem("employeeId", res.data.employee.employee_id);
         navigate("/EssDashboard");
       } else {
         alert("Invalid credentials");
@@ -27,8 +28,8 @@ function LoginPage() {
   };
 
   // Determine alternate link based on current path
-  const isAdmin = location.pathname === "/admin";
-  const togglePath = isAdmin ? "/" : "/admin";
+  const isAdmin = location.pathname === "/";
+  const togglePath = isAdmin ? "/" : "/";
   const toggleLabel = isAdmin ? "Access Self Service (ESS)" : "Access HR Login";
 
   return (

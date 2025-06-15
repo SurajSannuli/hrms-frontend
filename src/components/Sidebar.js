@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Drawer,
   List,
@@ -8,17 +8,23 @@ import {
   Toolbar,
   Box,
   Collapse,
-} from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleIcon from '@mui/icons-material/People';
-import EventIcon from '@mui/icons-material/Event';
-import PaymentIcon from '@mui/icons-material/Payment';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import EditIcon from '@mui/icons-material/Edit';
-import ListAltIcon from '@mui/icons-material/ListAlt';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import { useNavigate, useLocation } from 'react-router-dom';
+} from "@mui/material";
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  Event as EventIcon,
+  Payment as PaymentIcon,
+  PersonAdd as PersonAddIcon,
+  Edit as EditIcon,
+  ListAlt as ListAltIcon,
+  ExpandLess,
+  ExpandMore,
+  Logout as LogoutIcon,
+  Assignment as AssignmentIcon,
+  History as HistoryIcon,
+  CheckCircle as CheckCircleIcon,
+} from "@mui/icons-material";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -28,18 +34,22 @@ const Sidebar = () => {
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [employeeOpen, setEmployeeOpen] = useState(false);
 
-  // Automatically expand sections based on current route
+  const role = localStorage.getItem("role");
+
   useEffect(() => {
-    setEmployeeOpen(location.pathname.startsWith('/profile') || location.pathname.startsWith('/employee'));
-    setLeaveOpen(location.pathname.startsWith('/leave'));
+    setEmployeeOpen(
+      location.pathname.startsWith("/profile") ||
+        location.pathname.startsWith("/employee")
+    );
+    setLeaveOpen(location.pathname.startsWith("/leave"));
   }, [location.pathname]);
 
-  const handleLeaveClick = () => {
-    setLeaveOpen(!leaveOpen);
-  };
+  const handleLeaveClick = () => setLeaveOpen(!leaveOpen);
+  const handleEmployeeClick = () => setEmployeeOpen(!employeeOpen);
 
-  const handleEmployeeClick = () => {
-    setEmployeeOpen(!employeeOpen);
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
   };
 
   return (
@@ -51,65 +61,142 @@ const Sidebar = () => {
         flexShrink: 0,
         [`& .MuiDrawer-paper`]: {
           width: drawerWidth,
-          boxSizing: 'border-box',
-          backgroundColor: '#f9f9f9',
+          boxSizing: "border-box",
+          backgroundColor: "#f9f9f9",
         },
       }}
     >
       <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
-        <List>
-          <ListItem button onClick={() => navigate('/dashboard')}>
-            <ListItemIcon><DashboardIcon /></ListItemIcon>
+      <Box
+        sx={{
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
+        <List sx={{ flexGrow: 1 }}>
+          <ListItem
+            button
+            onClick={() =>
+              role === "ess"
+                ? navigate("/EssDashboard")
+                : navigate("/dashboard")
+            }
+          >
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItem>
-        
-          <ListItem button onClick={handleEmployeeClick}>
-            <ListItemIcon><PeopleIcon /></ListItemIcon>
-            <ListItemText primary="Employee Profile" />
-            {employeeOpen ? <ExpandLess /> : <ExpandMore />}
-          </ListItem>
 
-          <Collapse in={employeeOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/profile')}>
-                <ListItemIcon><PersonAddIcon /></ListItemIcon>
-                <ListItemText primary="Add Employee" />
+          {role === "admin" && (
+            <>
+              <ListItem button onClick={handleEmployeeClick}>
+                <ListItemIcon>
+                  <PeopleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Employee Profile" />
+                {employeeOpen ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/profile/editprofile')}>
-                <ListItemIcon><EditIcon /></ListItemIcon>
-                <ListItemText primary="Edit Employee" />
-              </ListItem>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/profile/employeelist')}>
-                <ListItemIcon><ListAltIcon /></ListItemIcon>
-                <ListItemText primary="Employee List" />
-              </ListItem>
-            </List>
-          </Collapse>
+              <Collapse in={employeeOpen} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <ListItem
+                    button
+                    sx={{ pl: 4 }}
+                    onClick={() => navigate("/profile")}
+                  >
+                    <ListItemIcon>
+                      <PersonAddIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Add Employee" />
+                  </ListItem>
+                  <ListItem
+                    button
+                    sx={{ pl: 4 }}
+                    onClick={() => navigate("/profile/editprofile")}
+                  >
+                    <ListItemIcon>
+                      <EditIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Edit Employee" />
+                  </ListItem>
+                  <ListItem
+                    button
+                    sx={{ pl: 4 }}
+                    onClick={() => navigate("/profile/employeelist")}
+                  >
+                    <ListItemIcon>
+                      <ListAltIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Employee List" />
+                  </ListItem>
+                </List>
+              </Collapse>
+            </>
+          )}
 
           <ListItem button onClick={handleLeaveClick}>
-            <ListItemIcon><EventIcon /></ListItemIcon>
+            <ListItemIcon>
+              <EventIcon />
+            </ListItemIcon>
             <ListItemText primary="Leave Management" />
             {leaveOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-
           <Collapse in={leaveOpen} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/leave/applyleave')}>
+              <ListItem
+                button
+                sx={{ pl: 4 }}
+                onClick={() => navigate("/leave/applyleave")}
+              >
+                <ListItemIcon>
+                  <AssignmentIcon />
+                </ListItemIcon>
                 <ListItemText primary="Apply Leave" />
               </ListItem>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/leave/leavehistory')}>
+              <ListItem
+                button
+                sx={{ pl: 4 }}
+                onClick={() => navigate("/leave/leavehistory")}
+              >
+                <ListItemIcon>
+                  <HistoryIcon />
+                </ListItemIcon>
                 <ListItemText primary="Leave History" />
               </ListItem>
-              <ListItem button sx={{ pl: 4 }} onClick={() => navigate('/leave/approvals')}>
-                <ListItemText primary="Pending for Approvals" />
-              </ListItem>
+              {role === "admin" && (
+                <ListItem
+                  button
+                  sx={{ pl: 4 }}
+                  onClick={() => navigate("/leave/approvals")}
+                >
+                  <ListItemIcon>
+                    <CheckCircleIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Pending for Approvals" />
+                </ListItem>
+              )}
             </List>
           </Collapse>
 
-          <ListItem button onClick={() => navigate('/payroll')}>
-            <ListItemIcon><PaymentIcon /></ListItemIcon>
-            <ListItemText primary="Payroll" />
+          {role === "admin" && (
+            <ListItem button onClick={() => navigate("/payroll")}>
+              <ListItemIcon>
+                <PaymentIcon />
+              </ListItemIcon>
+              <ListItemText primary="Payroll" />
+            </ListItem>
+          )}
+        </List>
+
+        {/* Logout Button at the Bottom */}
+        <List>
+          <ListItem button onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
           </ListItem>
         </List>
       </Box>

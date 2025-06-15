@@ -15,27 +15,40 @@ import {
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
 import axios from "axios";
-import { endpoint } from "../constants"; // make sure this exports `http://localhost:5000/api`
+import { endpoint } from "../constants";
 
 const LeaveHistory = () => {
   const [leaves, setLeaves] = useState([]);
-  const [filteredLeaves, setFilteredLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const employeeId = localStorage.getItem("employeeId");
+  const role = localStorage.getItem("role"); // "admin" or "employee"
 
   const fetchLeaves = async () => {
     setLoading(true);
     setError(null);
+
+    let url = "";
+    if (role === "admin") {
+      url = `${endpoint}/get-leaves`; // Admin gets all
+    } else if (employeeId) {
+      url = `${endpoint}/get-ess-leave/${employeeId}`; // ESS employee-specific
+    } else {
+      setError("Invalid access. No employee ID found.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.get(`${endpoint}/get-leaves`);
+      const response = await axios.get(url);
       if (Array.isArray(response.data)) {
         setLeaves(response.data);
-        setFilteredLeaves(response.data);
       } else {
         throw new Error("Invalid data format from API");
       }
     } catch (err) {
-      console.error("Error fetching leaves:", err);
+      console.error("Error fetching leave history:", err);
       setError("Failed to fetch leave history.");
     } finally {
       setLoading(false);
@@ -44,10 +57,10 @@ const LeaveHistory = () => {
 
   useEffect(() => {
     fetchLeaves();
-  }, []);
+  }, [role, employeeId]);
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
+    switch ((status || "").toLowerCase()) {
       case "approved":
         return "success";
       case "pending":
@@ -86,7 +99,7 @@ const LeaveHistory = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Employee</TableCell>
+                  {role === "admin" && <TableCell>Employee Name</TableCell>}
                   <TableCell>Leave Type</TableCell>
                   <TableCell>Start Date</TableCell>
                   <TableCell>End Date</TableCell>
@@ -102,25 +115,29 @@ const LeaveHistory = () => {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : filteredLeaves.length === 0 ? (
+                ) : leaves.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center">
                       No leave records found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredLeaves.map((leave) => (
-                    <TableRow key={leave.id || leave.leave_id} hover>
-                      <TableCell>{leave.employee_name || "N/A"}</TableCell>
+                  leaves.map((leave, index) => (
+                    <TableRow key={index} hover>
+                      {role === "admin" && (
+                        <TableCell>{leave.employee_name || "N/A"}</TableCell>
+                      )}
                       <TableCell>{leave.leave_type || "N/A"}</TableCell>
                       <TableCell>
                         {leave.start_date
-                          ? new Date(leave.start_date).toLocaleDateString()
+                          ? new Date(leave.start_date).toLocaleDateString(
+                              "en-GB"
+                            )
                           : "N/A"}
                       </TableCell>
                       <TableCell>
                         {leave.end_date
-                          ? new Date(leave.end_date).toLocaleDateString()
+                          ? new Date(leave.end_date).toLocaleDateString("en-GB")
                           : "N/A"}
                       </TableCell>
                       <TableCell>{leave.leave_days || 0}</TableCell>

@@ -1,4 +1,3 @@
-// LeavePage.js
 import React, { useState, useEffect } from "react";
 import {
   TextField,
@@ -24,6 +23,7 @@ import { endpoint, leaveType, status } from "../constants";
 
 function LeavePage() {
   const [leaves, setLeaves] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [form, setForm] = useState({
     employee: "",
     leaveType: "",
@@ -33,22 +33,36 @@ function LeavePage() {
     days: 0,
   });
 
+  const role = localStorage.getItem("role");
+  const employeeId = localStorage.getItem("employeeId");
+
   const [leaveTypes] = useState([
     "Annual Leave",
     "Sick Leave",
     "Maternity Leave",
     "Paternity Leave",
-    `${leaveType.unpaid} Leave`,
+    leaveType.unpaid,
   ]);
-
-  const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
     axios
       .get(`${endpoint}/get-employees`)
-      .then((res) => setEmployees(res.data))
+      .then((res) => {
+        setEmployees(res.data);
+
+        // If ESS, preselect their own employee ID
+        if (role === "ess") {
+          const emp = res.data.find((e) => e.employee_id === employeeId);
+          if (emp) {
+            setForm((prev) => ({
+              ...prev,
+              employee: emp.employee_id,
+            }));
+          }
+        }
+      })
       .catch((err) => console.error("Failed to fetch employees", err));
-  }, []);
+  }, [role, employeeId]);
 
   const calculateWorkingDays = (startDate, endDate) => {
     if (!startDate || !endDate) return 0;
@@ -103,20 +117,25 @@ function LeavePage() {
       end_date: form.end_date,
       reason: form.reason,
       leave_days: form.days,
-      leave_status: status.approved,
+      leave_status: role === "ess" ? status.pending : status.approved,
     };
 
     try {
       await axios.post(`${endpoint}/applyleave`, payload);
       setLeaves([...leaves, { id: Date.now(), ...payload }]);
       setForm({
-        employee: "",
+        employee: role === "ess" ? employeeId : "",
         leaveType: "",
         start_date: "",
         end_date: "",
         reason: "",
         days: 0,
       });
+      alert(
+        role === "ess"
+          ? "Leave application submitted and is pending for approval."
+          : "Leave application submitted and auto-approved."
+      );
     } catch (error) {
       console.error("Failed to apply leave:", error);
       alert("Error submitting leave application");
@@ -152,8 +171,12 @@ function LeavePage() {
               onChange={handleChange}
               label="Employee"
               required
+              disabled={role === "ess"} // ESS can't change employee
             >
-              {employees.map((emp) => (
+              {(role === "admin"
+                ? employees
+                : employees.filter((e) => e.employee_id === employeeId)
+              ).map((emp) => (
                 <MenuItem key={emp.employee_id} value={emp.employee_id}>
                   {emp.employee_id} - {emp.name}
                 </MenuItem>

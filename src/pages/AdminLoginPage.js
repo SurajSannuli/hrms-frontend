@@ -11,7 +11,7 @@ function AdminLoginPage() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post(`${endpoint}/login`, {
+      const res = await axios.post(`${endpoint}/admin-login`, {
         identifier,
         password,
       });

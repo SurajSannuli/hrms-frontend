@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -9,7 +9,6 @@ import {
   Divider,
 } from "@mui/material";
 import {
-  CalendarToday,
   MonetizationOn,
   EventAvailable,
   PendingActions,
@@ -17,28 +16,10 @@ import {
   AccountBalanceWallet,
 } from "@mui/icons-material";
 import { endpoint } from "../constants";
+import axios from "axios";
 
-const Dashboard = () => {
-  const employeeData = {
-    name: "John Doe",
-    designation: "Senior Software Engineer",
-    department: "Product Development",
-    employeeId: "EMP-2023-0456",
-    joinDate: "15/06/2018",
-  };
-
-  const leaveData = {
-    approved: 8,
-    pending: 2,
-    rejected: 1,
-  };
-
-  const payrollData = {
-    currentMonth: 85600,
-    lastMonth: 82000,
-    ytd: 598400,
-    nextPayDate: "25/06/2023",
-  };
+const ESSDashboard = () => {
+  const [dashboardData, setDashboardData] = useState(null);
 
   const holidays = [
     { date: "15/08/2023", name: "Independence Day" },
@@ -46,10 +27,41 @@ const Dashboard = () => {
     { date: "25/12/2023", name: "Christmas" },
   ];
 
+  const employeeId = localStorage.getItem("employeeId");
+
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const fetchDashboard = async () => {
+      try {
+        const res = await axios.get(`${endpoint}/ess-dashboard/${employeeId}`);
+        setDashboardData(res.data.data);
+      } catch (error) {
+        console.error("Failed to fetch ESS dashboard", error);
+      }
+    };
+
+    fetchDashboard();
+  }, [employeeId]);
+
+  const getNextMonthFirstDate = () => {
+    const today = new Date();
+    const nextMonthFirst = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      1
+    );
+    return nextMonthFirst.toLocaleDateString("en-GB");
+  };
+
+  if (!dashboardData) {
+    return <Typography sx={{ p: 3 }}>Loading Dashboard...</Typography>;
+  }
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
-        Welcome, {employeeData.name}
+        Welcome, {dashboardData.name}
       </Typography>
 
       <Grid container spacing={3}>
@@ -67,7 +79,7 @@ const Dashboard = () => {
                     Designation
                   </Typography>
                   <Typography variant="body1">
-                    {employeeData.designation}
+                    {dashboardData.designation}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -75,7 +87,7 @@ const Dashboard = () => {
                     Department
                   </Typography>
                   <Typography variant="body1">
-                    {employeeData.department}
+                    {dashboardData.department}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -83,7 +95,7 @@ const Dashboard = () => {
                     Employee ID
                   </Typography>
                   <Typography variant="body1">
-                    {employeeData.employeeId}
+                    {dashboardData.employee_id}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -91,7 +103,9 @@ const Dashboard = () => {
                     Join Date
                   </Typography>
                   <Typography variant="body1">
-                    {employeeData.joinDate}
+                    {new Date(dashboardData.joining_date).toLocaleDateString(
+                      "en-GB"
+                    )}
                   </Typography>
                 </Grid>
               </Grid>
@@ -112,17 +126,17 @@ const Dashboard = () => {
                   {
                     icon: <EventAvailable color="success" />,
                     label: "Approved",
-                    value: leaveData.approved,
+                    value: dashboardData.approved_leaves,
                   },
                   {
                     icon: <PendingActions color="warning" />,
                     label: "Pending",
-                    value: leaveData.pending,
+                    value: dashboardData.pending_leaves,
                   },
                   {
                     icon: <Cancel color="error" />,
                     label: "Rejected",
-                    value: leaveData.rejected,
+                    value: dashboardData.rejected_leaves,
                   },
                 ].map((item, index) => (
                   <Grid item xs={4} key={index}>
@@ -140,7 +154,7 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-        {/* Payroll */}
+        {/* Payroll Info */}
         <Grid item xs={12} md={6}>
           <Card sx={{ height: "100%" }}>
             <CardContent>
@@ -158,7 +172,7 @@ const Dashboard = () => {
                       </Typography>
                     </Box>
                     <Typography variant="h5">
-                      ₹{payrollData.currentMonth.toLocaleString()}
+                      ₹{parseFloat(dashboardData.total_salary).toLocaleString()}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -167,21 +181,11 @@ const Dashboard = () => {
                     <Box display="flex" alignItems="center" mb={1}>
                       <AccountBalanceWallet color="secondary" />
                       <Typography variant="subtitle1" sx={{ ml: 1 }}>
-                        YTD Earnings
+                        Next Pay Date
                       </Typography>
                     </Box>
-                    <Typography variant="h5">
-                      ₹{payrollData.ytd.toLocaleString()}
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12}>
-                  <Paper sx={{ p: 2 }}>
-                    <Typography variant="body1">
-                      Next pay date: <strong>{payrollData.nextPayDate}</strong>
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Last month: ₹{payrollData.lastMonth.toLocaleString()}
+                    <Typography variant="h6">
+                      {getNextMonthFirstDate()}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -215,4 +219,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default ESSDashboard;
